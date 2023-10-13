@@ -1,9 +1,10 @@
 import "fs";
-import thejobs from "./jobs.json";
 import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
-import  {success, warn}  from "./msg.js";
-import { theBzuGetterForEffoySira,theGetterForEffoySira } from "./effoy.js";
+import { success, warn } from "./msg.js";
+import { theBzuGetterForEffoySira, theGetterForEffoySira } from "./effoy.js";
+import { insertJob } from "./db/insertIntoJobs.js";
+import { jobs } from "./db/jobs.js";
 
 // const theBzuGetterForEffoySira = require('./effoy');
 // import {theBzuGetterForEffoySira} from './effoy';
@@ -177,15 +178,19 @@ async function createBrowserOnline(stat) {
   }
 }
 async function run() {
+  for(const job of jobs){
+    await insertJob({_id:job.url, ...job});
+  }
   success("Runned");
-  browser = await createBrowserOnline(false);
+  // browser = await createBrowserOnline(false);
 
-  await theBzuGetterForEffoySira(browser, thejobs);
+  // await theBzuGetterForEffoySira(browser, thejobs);
   // await theGetter(browser);
   // getJobContentsFromEffoySira(browser, await getJobsListFromEffoysira(browser));
   // await getJobsListFromEffoysira(browser)
-  await browser.close();
-  success("Browser Closed!");
+
+  // await browser.close();
+  // success("Browser Closed!");
 }
 // warn("Hello")
 await run();
