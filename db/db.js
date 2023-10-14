@@ -17,7 +17,6 @@ mongoose
       content:
         "Safaricom Telecommunications Ethiopia Vacancy Announcement: Safaricom Ethiopia is looking for a qualified person who meets the criteria indicated below. Safaricom Ethiopia is owned by an international consortium including Vodafone Group; Safaricom PLC; Vodacom Group; Sumitomo Corporation – one of the…",
     });
-
     newJob
       .save()
       .then(() => {
