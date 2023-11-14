@@ -1,11 +1,12 @@
 import "fs";
-// import thejobs from "./jobs.json";
 import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
 import { success, warn } from "./msg.js";
-import { theBzuGetterForEffoySira, theGetterForEffoySira } from "./effoy.js";
-import { insertJob } from "./db/insertIntoJobs.js";
+import {
+  theMainGetterForEffoySira,
+} from "./scrapers/effoy.js";
 import { jobs } from "./db/jobs.js";
+import { getFromHahuJobs } from "./scrapers/hahu.js";
 
 const SBR_WS_ENDPOINT =
   "wss://brd-customer-hl_a849742c-zone-scraping_browser-country-et:uii7n0wins3a@brd.superproxy.io:9222";
@@ -39,7 +40,6 @@ const SBR_WS_ENDPOINT =
 //   return new Date(yearnum, monthMap.mon, datenum);
 // }
 
-
 async function createBrowserOnline(stat) {
   try {
     let browser;
@@ -58,18 +58,18 @@ async function createBrowserOnline(stat) {
   }
 }
 async function run() {
-  for(const job of jobs){
-    await insertJob({_id:job.url, ...job});
-  }
+  // for (const job of jobs) {
+  //   await insertJob({ _id: job.url, ...job });
+  // }
   success("Runned");
-  // browser = await createBrowserOnline(false);
+  const browser = await createBrowserOnline(false);
 
-  // await theBzuGetterForEffoySira(browser, thejobs);
-  // await theGetter(browser);
-  // getJobContentsFromEffoySira(browser, await getJobsListFromEffoysira(browser));
-  // await getJobsListFromEffoysira(browser)
 
-  // await browser.close();
-  // success("Browser Closed!");
+  // await theMainGetterForEffoySira(browser);
+
+  await getFromHahuJobs(browser)
+
+  await browser.close();
+  success("Browser Closed!");
 }
 await run();
