@@ -1,15 +1,18 @@
-FROM node:latest
+# FROM node:latest
+# Use the official MeiliSearch image
+FROM getmeili/meilisearch:latest
 
-WORKDIR /app
+# WORKDIR /app
 
-COPY package.json ./
+# COPY package.json ./
 
-RUN npm install
+# RUN npm install
 
-COPY . .
+# COPY . .
 
-ENV PORT=8080
+# ENV PORT=8080
 
-EXPOSE 8080
+EXPOSE 7700
 
-CMD [ "npm", "start" ]
+# CMD [ "npm", "start" ]
+CMD [ "meilisearch" ]
