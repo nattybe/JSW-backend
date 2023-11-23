@@ -1,6 +1,6 @@
 const sites = {
     hahujobs: "https://hahu.jobs/jobs",
-    elelanajobs: "https://elelanajobs.com/",
+    elelanajobs: "https://elelanajobs.com/job-list/",
     shegerjobs: "https://shegerjobs.net/",
     effoysira: "https://effoysira.com/category/job/",
     harmejobs: "https://www.harmeejobs.com",

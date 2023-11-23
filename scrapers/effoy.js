@@ -1,7 +1,8 @@
 import fs from "fs";
 import { success, warn } from "../msg.js";
 import sites, { delay } from "../sites.js";
-import { insertJob } from "../db/db-scrap.js";
+import { insertBunchOfJobs, insertJob } from "../db/db-scrap.js";
+
 async function theGetterForEffoySira(browser, thepage) {
   const page = await browser.newPage();
   try {
@@ -88,16 +89,17 @@ async function theMainGetterForEffoySira(browser) {
       console.log(
         "Navigate to: " + `https://effoysira.com/category/job/page/${index}/`
       );
-      theBiggerJobs.push(...(await theGetterForEffoySira(browser, `https://effoysira.com/category/job/page/${index}/`))
+      theBiggerJobs.push(
+        ...(await theGetterForEffoySira(
+          browser,
+          `https://effoysira.com/category/job/page/${index}/`
+        ))
       );
       // await delay(2000)
     }
-    // TODO: instead of saving this shit to theBiggerJobs.json
-    //  make a function that fetches the inner content after checking
-    //  if the link exists in the data base (for now the JSON)
-    for(const job of theBiggerJobs){
-      await insertJob({_id:job.url, ...job});
-    }
+   
+    console.log(theBiggerJobs.length, "Jobs Scrapped");
+    success(`${await insertBunchOfJobs(theBiggerJobs)} jobs inserted From Effoy`);
     // fs.writeFile("theBiggerJobs.json", JSON.stringify(theBiggerJobs), (err) => {
     //   if (err) throw err;
     //   warn("File Saved Successfully");

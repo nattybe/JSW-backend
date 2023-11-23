@@ -13,6 +13,8 @@ const Job = mongoose.model("Jobs", new Schema({
   date: String,
   from: String,
   content: String,
+  image_url:String,
+  all_content:String,
 }));
 
 export {Job}

@@ -22,11 +22,8 @@ const connectToMongoDB = async () => {
     const foundJobs = await Job.find();
     const sanitizedDocuments = foundJobs.map((job) => ({
       ...job._doc,
-      _id: job._id
-        .toString()
-        .replace(/\//g, "3451")
-        .replace(/:/g, "3452")
-        .replace(/\./g, "3453"),
+      _id:new Date().getTime(),
+      unixDATE: (new Date(job.date).getTime())/1000,
     }));
     // console.warn(sanitizedDocuments);
     const client = new MeiliSearch({ host: "http://127.0.0.1:7700" });
@@ -37,11 +34,11 @@ const connectToMongoDB = async () => {
 
     try {
       index.addDocuments(sanitizedDocuments).then(async (res) => {
-        console.log(await client.getTask(res.taskUid));
+        console.log(await client.index('jobs').getTask(res.taskUid));
       });
       // const taskStatus = await client.getTask();
       // console.log(taskStatus);
-      const searchResults = (await index.search("safaricomሳዳስፍድሳፍ"));
+      const searchResults = (await index.search("safaricom"));
       console.log("result ብዛት",searchResults.hits.length);
       // console.log(addDocumentsResponse);
     } catch (indexingError) {
