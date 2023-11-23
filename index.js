@@ -1,7 +1,5 @@
-// File: server.js
 import express from "express";
 import { MeiliSearch } from "meilisearch";
-// import { Job } from "../db/models.js";
 
 const app = express();
 const port = 3100;
@@ -63,16 +61,11 @@ app.get("/frontPagers", async (req, res) => {
       "Access-Control-Allow-Headers",
       "Origin, X-Requested-With, Content-Type, Accept"
     );
-    // console.log(req.body);
     const searchResults = await index.search("a", {
       sort: ["unixDATE:asc"],
       limit:10,
-      // filter:"date = '"+gettoday()+"'",
-      filter:"date = 'October 2, 2023'"
+      filter:"date = '"+gettoday()+"'",
     });
-
-    // TODO: why the actual fuck is this post shit not working
-
     res.json({
       todaysjob: { estimatedTotalHits:searchResults.estimatedTotalHits, count:searchResults.hits.length, items: searchResults.hits },
     });
@@ -82,23 +75,6 @@ app.get("/frontPagers", async (req, res) => {
   }
   res;
 });
-app.get("/parsetime", async (req, res) => {
-  const query = req.query;
-  const parsedDate = new Date(query.thedate);
-  const unixTimestamp = new Date(query.thedate).getTime();
-
-  try {
-    res.json({
-      request: query.thedate,
-      parsed: parsedDate,
-      unixformat: unixTimestamp,
-    });
-  } catch (error) {
-    console.error("Error searching with Meilisearch:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });

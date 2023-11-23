@@ -1,9 +1,9 @@
 import "fs";
+import { scheduleJob } from "node-schedule";
 import puppeteer from "puppeteer";
 import puppeteerCore from "puppeteer-core";
 import { success, warn } from "../msg.js";
 import { theMainGetterForEffoySira } from "./effoy.js";
-import { jobs } from "./db/jobs.js";
 import { getFromHahuJobs } from "./hahu.js";
 import getFromElelanajobs from "./elelana.js";
 import { theMainGetterForHarme } from "./harme.js";
@@ -44,4 +44,4 @@ async function run() {
   success("Browser Closed!");
 }
 
-export default run;
+const theRun = schedule.scheduleJob("0 * * * *", async () => await run());
