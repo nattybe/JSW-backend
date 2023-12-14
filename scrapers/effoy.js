@@ -1,6 +1,8 @@
 import fs from "fs";
-import { success, warn } from "./msg.js";
-import sites, { delay } from "./sites.js";
+import { success, warn } from "../msg.js";
+import sites, { delay } from "../sites.js";
+import { insertBunchOfJobs, insertJob } from "../db/db-scrap.js";
+
 async function theGetterForEffoySira(browser, thepage) {
   const page = await browser.newPage();
   try {
@@ -83,26 +85,25 @@ async function theMainGetterForEffoySira(browser) {
   try {
     const GOAT = await getPagesFromEffoySira(browser);
     const theBiggerJobs = [];
-    for (let index = 1; index <= 3; index++) {
+    for (let index = 1; index <= GOAT; index++) {
       console.log(
         "Navigate to: " + `https://effoysira.com/category/job/page/${index}/`
       );
       theBiggerJobs.push(
-        await theGetterForEffoySira(
+        ...(await theGetterForEffoySira(
           browser,
           `https://effoysira.com/category/job/page/${index}/`
-        )
+        ))
       );
       // await delay(2000)
     }
-    // TODO: instead of saving this shit to theBiggerJobs.json
-    //  make a function that fetches the inner content after checking
-    //  if the link exists in the data base (for now the JSON)
-
-    fs.writeFile("theBiggerJobs.json", JSON.stringify(theBiggerJobs), (err) => {
-      if (err) throw err;
-      console.log("File Saved Successfully");
-    });
+   
+    console.log(theBiggerJobs.length, "Jobs Scrapped");
+    success(`${await insertBunchOfJobs(theBiggerJobs)} jobs inserted From Effoy`);
+    // fs.writeFile("theBiggerJobs.json", JSON.stringify(theBiggerJobs), (err) => {
+    //   if (err) throw err;
+    //   warn("File Saved Successfully");
+    // });
   } catch (error) {
     console.error("Scrap Failed In The Main Getter ", error);
   } finally {

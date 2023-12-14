@@ -1,69 +1,80 @@
-import "fs";
-// import thejobs from "./jobs.json";
-import puppeteer from "puppeteer";
-import puppeteerCore from "puppeteer-core";
-import { success, warn } from "./msg.js";
-import { theBzuGetterForEffoySira, theGetterForEffoySira,getPagesFromEffoySira, theMainGetterForEffoySira } from "./effoy.js";
-import sites from "./sites.js";
-const SBR_WS_ENDPOINT =
-  "wss://brd-customer-hl_a849742c-zone-scraping_browser-country-et:uii7n0wins3a@brd.superproxy.io:9222";
-// const format = new Intl.DateTimeFormat("en-US", {
-//   year: "numeric",
-//   month: "long",
-//   day: "numeric",
-// });
-// const parseDateString=(dateString)=> {
-//   const parts = dateString.split(", ");
-//   console.log(parts);
-//   mon=(parts[0].split(" ")[0]).toLowerCase()
-//   datenum=parts[0].split(" ")[1]
-//   yearnum=parts[1]
-//   console.log(datenum);
-//   const monthMap = {
-//     "january": 0,
-//     "february": 1,
-//     "march": 2,
-//     "april": 3,
-//     "may": 4,
-//     "jun": 5,
-//     "july": 6,
-//     "august": 7,
-//     "september": 8,
-//     "october": 9,
-//     "november": 10,
-//     "december": 11
-//   };
-//   const month = monthMap[parts[1].toLowerCase()];
-//   return new Date(yearnum, monthMap.mon, datenum);
-// }
+import express from "express";
+import { MeiliSearch } from "meilisearch";
 
+const app = express();
+const port = 3100;
+const gettoday = () => {
+  const dateFormatter = new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const formattedDate = dateFormatter.format(new Date());
+  return formattedDate;
+};
+const client = new MeiliSearch({ host: "http://127.0.0.1:7700" });
+const index = client.index("jobs");
 
-async function createBrowserOnline(stat) {
+app.get("/", async (req, res) => {
+  let query = req.query;
+  let searchQuery = { limit: 10 };
+
   try {
-    let browser;
-    if (stat) {
-      browser = await puppeteerCore.connect({
-        browserWSEndpoint: SBR_WS_ENDPOINT,
-      });
-      console.log("Browser Connected Online");
-    } else {
-      browser = await puppeteer.launch({ headless: "new" });
-      console.log("Browser Connected Offline");
+    if (req.query.sortby) {
+      searchQuery = { ...searchQuery, sort: [req.query.sortby] };
     }
-    return browser;
+    if (req.query.offset) {
+      searchQuery = { ...searchQuery, offset: Number(req.query.offset) };
+    }
+    const searchResults = await index.search(query.sq, searchQuery);
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    res.json({
+      request: query,
+      searchQuery,
+      respond: {
+        estimatedTotalHits: searchResults.estimatedTotalHits,
+        result: searchResults.hits,
+      },
+    });
   } catch (error) {
-    console.error("Create Browser: ", error);
+    console.error("Error searching with Meilisearch:", error);
+    res.status(500).json({ error: error.message });
   }
-}
-async function run() {
-  success("Runned");
-  const browser = await createBrowserOnline(false);
-  await theMainGetterForEffoySira(browser);
-  // await theBzuGetterForEffoySira(browser, thejobs);
-  // await theGetter(browser);
-  // getJobContentsFromEffoySira(browser, await getJobsListFromEffoysira(browser));
-  // await getJobsListFromEffoysira(browser)
-  await browser.close();
-  success("Browser Closed!");
-}
-await run();
+});
+app.get("/frontPagers", async (req, res) => {
+  const query = req.query;
+  try {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+    );
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept"
+    );
+    const searchResults = await index.search("a", {
+      sort: ["unixDATE:asc"],
+      limit:10,
+      filter:"date = '"+gettoday()+"'",
+    });
+    res.json({
+      todaysjob: { estimatedTotalHits:searchResults.estimatedTotalHits, count:searchResults.hits.length, items: searchResults.hits },
+    });
+  } catch (error) {
+    console.error("Error searching with Meilisearch:", error);
+    res.status(500).json({ error: error.message });
+  }
+  res;
+});
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});
